@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>오피스 공실률</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:20px;
+  font-family:Arial,sans-serif;
+}
+canvas{
+  max-width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<h2>전국 오피스 공실률</h2>
+
+<canvas id="chart"></canvas>
+
+<script>
+
+const API_URL = "https://reb-office-vacancy-api.ipsw97.workers.dev/";
+
+fetch(API_URL)
+.then(res => res.json())
+.then(data => {
+
+  const rows =
+    data.SttsApiTblData.row;
+
+  const national =
+    rows.filter(r => r.CLS_NM === "전국");
+
+  national.sort((a,b)=>
+    a.WRTTIME_IDTFR_ID.localeCompare(
+      b.WRTTIME_IDTFR_ID
+    )
+  );
+
+  const labels =
+    national.map(r => r.WRTTIME_DESC);
+
+  const values =
+    national.map(r => Number(r.DTA_VAL));
+
+  new Chart(
+    document.getElementById('chart'),
+    {
+      type:'line',
+      data:{
+        labels:labels,
+        datasets:[
+          {
+            label:'전국 오피스 공실률 (%)',
+            data:values
+          }
+        ]
+      }
+    }
+  );
+
+})
+.catch(err => {
+  document.body.innerHTML +=
+    "<p>오류 발생: " + err + "</p>";
+});
+
+</script>
+
+</body>
+</html>
