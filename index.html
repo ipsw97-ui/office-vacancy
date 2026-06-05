@@ -3,13 +3,27 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>JSON 확인</title>
+<title>전국 오피스 공실률</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:20px;
+  font-family:Arial,sans-serif;
+}
+
+#chart{
+  max-width:100%;
+}
+</style>
+
 </head>
 <body>
 
-<h2>JSON 확인</h2>
+<h2>전국 오피스 공실률</h2>
 
-<pre id="output">로딩 중...</pre>
+<canvas id="chart"></canvas>
 
 <script>
 
@@ -20,14 +34,48 @@ fetch(API_URL)
 .then(res => res.json())
 .then(data => {
 
-  document.getElementById("output").textContent =
-    JSON.stringify(data, null, 2);
+  const rows = data.SttsApiTblData[1].row;
+
+  const national = rows.filter(
+    r => r.CLS_NM === "전국"
+  );
+
+  national.sort((a,b) =>
+    a.WRTTIME_IDTFR_ID.localeCompare(
+      b.WRTTIME_IDTFR_ID
+    )
+  );
+
+  const labels =
+    national.map(r => r.WRTTIME_DESC);
+
+  const values =
+    national.map(r => Number(r.DTA_VAL));
+
+  new Chart(
+    document.getElementById("chart"),
+    {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "전국 오피스 공실률 (%)",
+          data: values
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    }
+  );
 
 })
 .catch(err => {
 
-  document.getElementById("output").textContent =
-    "오류: " + err;
+  document.body.innerHTML +=
+    "<p>오류 발생: " + err + "</p>";
+
+  console.error(err);
 
 });
 
