@@ -3,58 +3,33 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>오피스 공실률</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body {
-  margin: 20px;
-  font-family: Arial, sans-serif;
-}
-
-#debug {
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  white-space: pre-wrap;
-  font-size: 12px;
-  max-height: 600px;
-  overflow: auto;
-}
-</style>
-
+<title>JSON 확인</title>
 </head>
 <body>
 
-<h2>전국 오피스 공실률</h2>
+<h2>JSON 확인</h2>
 
-<canvas id="chart"></canvas>
-
-<div id="debug">데이터 로딩 중...</div>
+<pre id="output">로딩 중...</pre>
 
 <script>
 
-const API_URL = "https://reb-office-vacancy-api.ipsw97.workers.dev/";
+const API_URL =
+"https://reb-office-vacancy-api.ipsw97.workers.dev/";
 
 fetch(API_URL)
-  .then(res => res.json())
-  .then(data => {
+.then(res => res.json())
+.then(data => {
 
-    console.log(data);
+  document.getElementById("output").textContent =
+    JSON.stringify(data, null, 2);
 
-    document.getElementById("debug").textContent =
-      JSON.stringify(data, null, 2).substring(0, 5000);
+})
+.catch(err => {
 
-  })
-  .catch(err => {
+  document.getElementById("output").textContent =
+    "오류: " + err;
 
-    console.error(err);
-
-    document.getElementById("debug").textContent =
-      "오류 발생: " + err;
-
-  });
+});
 
 </script>
 
