@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="utf-8">
@@ -7,69 +8,53 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:20px;
-  font-family:Arial,sans-serif;
+body {
+  margin: 20px;
+  font-family: Arial, sans-serif;
 }
-canvas{
-  max-width:100%;
+
+#debug {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  white-space: pre-wrap;
+  font-size: 12px;
+  max-height: 600px;
+  overflow: auto;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <h2>전국 오피스 공실률</h2>
 
 <canvas id="chart"></canvas>
 
+<div id="debug">데이터 로딩 중...</div>
+
 <script>
 
 const API_URL = "https://reb-office-vacancy-api.ipsw97.workers.dev/";
 
 fetch(API_URL)
-.then(res => res.json())
-.then(data => {
+  .then(res => res.json())
+  .then(data => {
 
-  const rows =
-    data.SttsApiTblData.row;
+    console.log(data);
 
-  const national =
-    rows.filter(r => r.CLS_NM === "전국");
+    document.getElementById("debug").textContent =
+      JSON.stringify(data, null, 2).substring(0, 5000);
 
-  national.sort((a,b)=>
-    a.WRTTIME_IDTFR_ID.localeCompare(
-      b.WRTTIME_IDTFR_ID
-    )
-  );
+  })
+  .catch(err => {
 
-  const labels =
-    national.map(r => r.WRTTIME_DESC);
+    console.error(err);
 
-  const values =
-    national.map(r => Number(r.DTA_VAL));
+    document.getElementById("debug").textContent =
+      "오류 발생: " + err;
 
-  new Chart(
-    document.getElementById('chart'),
-    {
-      type:'line',
-      data:{
-        labels:labels,
-        datasets:[
-          {
-            label:'전국 오피스 공실률 (%)',
-            data:values
-          }
-        ]
-      }
-    }
-  );
-
-})
-.catch(err => {
-  document.body.innerHTML +=
-    "<p>오류 발생: " + err + "</p>";
-});
+  });
 
 </script>
 
