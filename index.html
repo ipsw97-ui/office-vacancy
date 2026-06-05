@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="utf-8">
-<title>전국 오피스 공실률</title>
+<title>지역별 오피스 공실률</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -13,17 +12,25 @@ body{
   font-family:Arial,sans-serif;
 }
 
-#chart{
+.chart-container{
+  width:100%;
+  height:700px;
+}
+
+canvas{
   max-width:100%;
 }
 </style>
 
 </head>
+
 <body>
 
-<h2>전국 오피스 공실률</h2>
+<h2>지역별 오피스 공실률 추이</h2>
 
-<canvas id="chart"></canvas>
+<div class="chart-container">
+  <canvas id="chart"></canvas>
+</div>
 
 <script>
 
@@ -36,21 +43,43 @@ fetch(API_URL)
 
   const rows = data.SttsApiTblData[1].row;
 
-  const national = rows.filter(
-    r => r.CLS_NM === "전국"
-  );
+  const regions = [
+    "전국",
+    "서울",
+    "부산",
+    "대구",
+    "인천",
+    "경기"
+  ];
 
-  national.sort((a,b) =>
-    a.WRTTIME_IDTFR_ID.localeCompare(
-      b.WRTTIME_IDTFR_ID
-    )
-  );
+  const nationalRows = rows
+    .filter(r => r.CLS_NM === "전국")
+    .sort((a,b)=>
+      a.WRTTIME_IDTFR_ID.localeCompare(
+        b.WRTTIME_IDTFR_ID
+      )
+    );
 
   const labels =
-    national.map(r => r.WRTTIME_DESC);
+    nationalRows.map(r => r.WRTTIME_DESC);
 
-  const values =
-    national.map(r => Number(r.DTA_VAL));
+  const datasets = regions.map(region => {
+
+    const regionRows = rows
+      .filter(r => r.CLS_NM === region)
+      .sort((a,b)=>
+        a.WRTTIME_IDTFR_ID.localeCompare(
+          b.WRTTIME_IDTFR_ID
+        )
+      );
+
+    return {
+      label: region,
+      data: regionRows.map(r => Number(r.DTA_VAL)),
+      tension: 0.25
+    };
+
+  });
 
   new Chart(
     document.getElementById("chart"),
@@ -58,13 +87,35 @@ fetch(API_URL)
       type: "line",
       data: {
         labels: labels,
-        datasets: [{
-          label: "전국 오피스 공실률 (%)",
-          data: values
-        }]
+        datasets: datasets
       },
       options: {
-        responsive: true
+        responsive: true,
+        maintainAspectRatio: false,
+
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+
+        plugins: {
+          legend: {
+            position: 'top'
+          },
+          title: {
+            display: true,
+            text: '지역별 오피스 공실률(%)'
+          }
+        },
+
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: '공실률 (%)'
+            }
+          }
+        }
       }
     }
   );
